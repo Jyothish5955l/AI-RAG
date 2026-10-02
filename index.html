@@ -21,27 +21,17 @@
 :root {
 
     --bg: #07070f;
-
     --surface: #0f0f1a;
-
     --panel: #161625;
-
     --border: #292940;
-
     --accent: #6c63ff;
-
     --accent2: #ff6584;
-
     --green: #3dffa0;
-
     --yellow: #ffd166;
-
     --text: #e8e8f5;
-
     --muted: #777795;
 
     --font: "Space Grotesk", sans-serif;
-
     --mono: "JetBrains Mono", monospace;
 
 }
@@ -54,9 +44,7 @@
 * {
 
     box-sizing: border-box;
-
     margin: 0;
-
     padding: 0;
 
 }
@@ -65,13 +53,9 @@
 body {
 
     font-family: var(--font);
-
     background: var(--bg);
-
     color: var(--text);
-
     min-height: 100vh;
-
     overflow: hidden;
 
 }
@@ -469,6 +453,57 @@ body {
     font-size: 0.72rem;
 
     margin-top: 3px;
+
+}
+
+
+/* ============================================================
+   REMOVE DOCUMENT BUTTON
+============================================================ */
+
+.remove-document-button {
+
+    width: 100%;
+
+    margin-top: 13px;
+
+    padding: 10px 12px;
+
+    border-radius: 9px;
+
+    border: 1px solid rgba(255,101,132,.45);
+
+    background: rgba(255,101,132,.05);
+
+    color: var(--accent2);
+
+    cursor: pointer;
+
+    font-family: var(--font);
+
+    font-size: 0.78rem;
+
+    font-weight: 600;
+
+    transition: .2s;
+
+}
+
+
+.remove-document-button:hover {
+
+    background: rgba(255,101,132,.15);
+
+    border-color: var(--accent2);
+
+    transform: translateY(-1px);
+
+}
+
+
+.remove-document-button:active {
+
+    transform: translateY(0);
 
 }
 
@@ -1469,17 +1504,33 @@ body {
 
             </div>
 
+
+            <!-- NEW: REMOVE DOCUMENT BUTTON -->
+
+            <button
+                class="remove-document-button"
+                id="remove-document-button"
+                onclick="removeDocument()"
+            >
+
+                🗑 Remove Document
+
+            </button>
+
+
         </div>
 
     </div>
 
+
+    <!-- CLEAR CHAT -->
 
     <button
         class="clear-button"
         onclick="clearChat()"
     >
 
-        🗑 Clear Chat
+        🧹 Clear Chat
 
     </button>
 
@@ -1988,16 +2039,8 @@ async function handleFile(file) {
         }
 
 
-        // ----------------------------------------------------
-        // Document loaded
-        // ----------------------------------------------------
-
         docLoaded = true;
 
-
-        // ----------------------------------------------------
-        // Update document card
-        // ----------------------------------------------------
 
         showDocumentInfo(data);
 
@@ -2007,10 +2050,6 @@ async function handleFile(file) {
             "Document loaded"
         );
 
-
-        // ----------------------------------------------------
-        // Hide welcome screen
-        // ----------------------------------------------------
 
         const welcome =
             document.getElementById(
@@ -2025,10 +2064,6 @@ async function handleFile(file) {
 
         }
 
-
-        // ----------------------------------------------------
-        // Success message
-        // ----------------------------------------------------
 
         addMessage(
             "ai",
@@ -2193,6 +2228,201 @@ function restoreDocumentInfo(data) {
         data.file_size_mb
             ? data.file_size_mb + " MB"
             : "--";
+
+}
+
+
+// ============================================================
+// REMOVE DOCUMENT
+// ============================================================
+
+async function removeDocument() {
+
+    if (isThinking) {
+
+        toast(
+            "⏳ Please wait for the current answer to finish.",
+            "error"
+        );
+
+        return;
+
+    }
+
+
+    const confirmed =
+        confirm(
+            "Remove the uploaded document?\n\n" +
+            "This will clear the document from the RAG memory."
+        );
+
+
+    if (!confirmed) {
+
+        return;
+
+    }
+
+
+    const button =
+        document.getElementById(
+            "remove-document-button"
+        );
+
+
+    try {
+
+        button.disabled = true;
+
+        button.textContent =
+            "⏳ Removing...";
+
+
+        const response =
+            await fetch(
+                `${API}/clear-document`,
+                {
+                    method: "POST"
+                }
+            );
+
+
+        const data =
+            await response.json();
+
+
+        if (
+            !response.ok ||
+            !data.success
+        ) {
+
+            throw new Error(
+                data.error ||
+                "Failed to remove document."
+            );
+
+        }
+
+
+        // ----------------------------------------------------
+        // Reset frontend state
+        // ----------------------------------------------------
+
+        docLoaded = false;
+
+
+        // ----------------------------------------------------
+        // Hide document card
+        // ----------------------------------------------------
+
+        document
+            .getElementById(
+                "doc-card"
+            )
+            .classList.remove(
+                "visible"
+            );
+
+
+        // ----------------------------------------------------
+        // Reset file input
+        // ----------------------------------------------------
+
+        fileInput.value = "";
+
+
+        // ----------------------------------------------------
+        // Reset document information
+        // ----------------------------------------------------
+
+        document
+            .getElementById(
+                "doc-name"
+            )
+            .textContent = "--";
+
+
+        document
+            .getElementById(
+                "doc-uploaded"
+            )
+            .textContent = "--";
+
+
+        document
+            .getElementById(
+                "doc-pages"
+            )
+            .textContent = "--";
+
+
+        document
+            .getElementById(
+                "doc-chunks"
+            )
+            .textContent = "--";
+
+
+        document
+            .getElementById(
+                "doc-characters"
+            )
+            .textContent = "--";
+
+
+        document
+            .getElementById(
+                "doc-size"
+            )
+            .textContent = "--";
+
+
+        // ----------------------------------------------------
+        // Clear chat
+        // ----------------------------------------------------
+
+        clearChat(false);
+
+
+        // ----------------------------------------------------
+        // Update server status
+        // ----------------------------------------------------
+
+        setStatus(
+            true,
+            "Server ready"
+        );
+
+
+        toast(
+            "🗑 Document removed successfully.",
+            "success"
+        );
+
+
+    } catch (error) {
+
+        console.error(
+            "Remove document error:",
+            error
+        );
+
+
+        toast(
+            "❌ " +
+            error.message,
+            "error"
+        );
+
+
+    } finally {
+
+        button.disabled = false;
+
+        button.textContent =
+            "🗑 Remove Document";
+
+    }
 
 }
 
@@ -2394,10 +2624,6 @@ function addMessage(
     bubble.innerHTML =
         text;
 
-
-    // --------------------------------------------------------
-    // Sources
-    // --------------------------------------------------------
 
     if (
         sources &&
@@ -2778,11 +3004,19 @@ document
 // CLEAR CHAT
 // ============================================================
 
-function clearChat() {
+function clearChat(
+    showToast = true
+) {
 
     const messages =
         document.getElementById(
             "messages"
+        );
+
+
+    const input =
+        document.getElementById(
+            "chat-input"
         );
 
 
@@ -2802,29 +3036,66 @@ function clearChat() {
             </h2>
 
             <p>
-                Chat cleared.
-                Your uploaded document is still loaded.
-                Ask another question.
+                Your chat is empty.
+                Ask a question about your uploaded document.
             </p>
+
+            <div class="welcome-steps">
+
+                <div class="step">
+
+                    <div class="step-number">
+                        1
+                    </div>
+
+                    <div class="step-text">
+                        Upload a document
+                    </div>
+
+                </div>
+
+                <div class="step">
+
+                    <div class="step-number">
+                        2
+                    </div>
+
+                    <div class="step-text">
+                        Document gets indexed
+                    </div>
+
+                </div>
+
+                <div class="step">
+
+                    <div class="step-number">
+                        3
+                    </div>
+
+                    <div class="step-text">
+                        Ask questions
+                    </div>
+
+                </div>
+
+            </div>
 
         </div>
 
     `;
 
 
-    if (docLoaded) {
+    input.value = "";
 
-        document
-            .getElementById(
-                "welcome"
-            )
-            .style.display =
-            "none";
+    input.style.height =
+        "auto";
 
 
-        addMessage(
-            "ai",
-            "🧠 Chat cleared. Your document is still loaded. Ask me anything."
+    if (showToast) {
+
+        toast(
+            "🧹 Chat cleared",
+            "success"
         );
 
     }

@@ -170,6 +170,27 @@ def status():
         "document": current_document
     })
 
+@app.post("/clear-document")
+def clear_document():
+    global chunks_store, idf, current_document
+
+    chunks_store = []
+    idf = {}
+
+    current_document = {
+        "filename": None,
+        "pages": 0,
+        "chunks": 0,
+        "characters": 0,
+        "file_size": 0,
+        "uploaded_at": None
+    }
+
+    return jsonify({
+        "success": True,
+        "message": "Document removed successfully."
+    })
+
 @app.post("/upload")
 def upload():
     global chunks_store, current_document
