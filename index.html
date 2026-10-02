@@ -1,0 +1,2931 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+<meta charset="UTF-8">
+
+<meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+>
+
+<title>DocuMind AI — RAG Chatbot</title>
+
+<style>
+
+/* ============================================================
+   VARIABLES
+============================================================ */
+
+:root {
+
+    --bg: #07070f;
+
+    --surface: #0f0f1a;
+
+    --panel: #161625;
+
+    --border: #292940;
+
+    --accent: #6c63ff;
+
+    --accent2: #ff6584;
+
+    --green: #3dffa0;
+
+    --yellow: #ffd166;
+
+    --text: #e8e8f5;
+
+    --muted: #777795;
+
+    --font: "Space Grotesk", sans-serif;
+
+    --mono: "JetBrains Mono", monospace;
+
+}
+
+
+/* ============================================================
+   RESET
+============================================================ */
+
+* {
+
+    box-sizing: border-box;
+
+    margin: 0;
+
+    padding: 0;
+
+}
+
+
+body {
+
+    font-family: var(--font);
+
+    background: var(--bg);
+
+    color: var(--text);
+
+    min-height: 100vh;
+
+    overflow: hidden;
+
+}
+
+
+/* ============================================================
+   APP
+============================================================ */
+
+.app {
+
+    display: grid;
+
+    grid-template-columns: 315px 1fr;
+
+    grid-template-rows: 76px 1fr;
+
+    height: 100vh;
+
+}
+
+
+/* ============================================================
+   NAVBAR
+============================================================ */
+
+.navbar {
+
+    grid-column: 1 / -1;
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: space-between;
+
+    padding: 0 25px;
+
+    background: rgba(15,15,26,0.96);
+
+    border-bottom: 1px solid var(--border);
+
+}
+
+
+.logo {
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 12px;
+
+    font-size: 1.3rem;
+
+    font-weight: 700;
+
+    color: #d06cff;
+
+}
+
+
+.logo-icon {
+
+    font-size: 1.6rem;
+
+}
+
+
+.nav-badge {
+
+    padding: 6px 15px;
+
+    border-radius: 20px;
+
+    border: 1px solid #5148d4;
+
+    color: #9189ff;
+
+    font-family: var(--mono);
+
+    font-size: 0.7rem;
+
+}
+
+
+.nav-status {
+
+    display: flex;
+
+    align-items: center;
+
+    color: var(--muted);
+
+    font-size: 0.82rem;
+
+}
+
+
+.status-dot {
+
+    width: 9px;
+
+    height: 9px;
+
+    border-radius: 50%;
+
+    background: #666;
+
+    margin-right: 8px;
+
+}
+
+
+.status-dot.online {
+
+    background: var(--green);
+
+    box-shadow: 0 0 10px var(--green);
+
+}
+
+
+/* ============================================================
+   SIDEBAR
+============================================================ */
+
+.sidebar {
+
+    background: var(--surface);
+
+    border-right: 1px solid var(--border);
+
+    padding: 28px 7px 20px 7px;
+
+    overflow-y: auto;
+
+    display: flex;
+
+    flex-direction: column;
+
+}
+
+
+.sidebar-section {
+
+    margin-bottom: 22px;
+
+}
+
+
+.sidebar-label {
+
+    color: #9696c0;
+
+    font-family: var(--mono);
+
+    font-size: 0.7rem;
+
+    letter-spacing: 0.08em;
+
+    margin: 0 0 10px 8px;
+
+    text-transform: uppercase;
+
+}
+
+
+/* ============================================================
+   UPLOAD ZONE
+============================================================ */
+
+.upload-zone {
+
+    border: 2px dashed #29294b;
+
+    border-radius: 15px;
+
+    padding: 30px 15px;
+
+    text-align: center;
+
+    cursor: pointer;
+
+    transition: 0.2s;
+
+}
+
+
+.upload-zone:hover,
+
+.upload-zone.dragover {
+
+    border-color: var(--accent);
+
+    background: rgba(108,99,255,0.05);
+
+}
+
+
+.upload-icon {
+
+    font-size: 2rem;
+
+    margin-bottom: 10px;
+
+}
+
+
+.upload-text {
+
+    color: #8f8fae;
+
+    font-size: 0.82rem;
+
+}
+
+
+.upload-types {
+
+    margin-top: 8px;
+
+    color: #77779d;
+
+    font-family: var(--mono);
+
+    font-size: 0.7rem;
+
+}
+
+
+#file-input {
+
+    display: none;
+
+}
+
+
+/* ============================================================
+   PROGRESS
+============================================================ */
+
+.progress-wrap {
+
+    display: none;
+
+    margin-top: 12px;
+
+}
+
+
+.progress-wrap.visible {
+
+    display: block;
+
+}
+
+
+.progress-bar {
+
+    height: 5px;
+
+    background: #24243a;
+
+    border-radius: 5px;
+
+    overflow: hidden;
+
+}
+
+
+.progress-fill {
+
+    width: 0%;
+
+    height: 100%;
+
+    background: linear-gradient(
+        90deg,
+        var(--accent),
+        var(--accent2)
+    );
+
+    transition: width .3s;
+
+}
+
+
+/* ============================================================
+   DOCUMENT CARD
+============================================================ */
+
+.doc-card {
+
+    display: none;
+
+    background: var(--panel);
+
+    border: 1px solid var(--border);
+
+    border-radius: 13px;
+
+    padding: 15px;
+
+}
+
+
+.doc-card.visible {
+
+    display: block;
+
+}
+
+
+.doc-success {
+
+    color: var(--green);
+
+    font-size: 0.75rem;
+
+    font-family: var(--mono);
+
+    margin-bottom: 10px;
+
+}
+
+
+.doc-name {
+
+    color: var(--text);
+
+    font-weight: 600;
+
+    font-size: 0.85rem;
+
+    word-break: break-word;
+
+}
+
+
+.doc-uploaded {
+
+    color: var(--muted);
+
+    font-size: 0.7rem;
+
+    margin-top: 6px;
+
+}
+
+
+.doc-info-grid {
+
+    display: grid;
+
+    grid-template-columns: 1fr 1fr;
+
+    gap: 7px;
+
+    margin-top: 12px;
+
+}
+
+
+.doc-info {
+
+    background: #10101c;
+
+    border: 1px solid #24243b;
+
+    border-radius: 8px;
+
+    padding: 8px;
+
+}
+
+
+.doc-info-label {
+
+    color: var(--muted);
+
+    font-size: 0.62rem;
+
+    text-transform: uppercase;
+
+}
+
+
+.doc-info-value {
+
+    color: var(--green);
+
+    font-family: var(--mono);
+
+    font-size: 0.72rem;
+
+    margin-top: 3px;
+
+}
+
+
+/* ============================================================
+   CLEAR BUTTON
+============================================================ */
+
+.clear-button {
+
+    margin-top: auto;
+
+    width: 100%;
+
+    padding: 11px;
+
+    border-radius: 10px;
+
+    border: 1px solid var(--border);
+
+    background: transparent;
+
+    color: #8585a5;
+
+    cursor: pointer;
+
+}
+
+
+.clear-button:hover {
+
+    border-color: var(--accent2);
+
+    color: var(--accent2);
+
+}
+
+
+/* ============================================================
+   CHAT AREA
+============================================================ */
+
+.chat-area {
+
+    display: flex;
+
+    flex-direction: column;
+
+    min-width: 0;
+
+    height: calc(100vh - 76px);
+
+}
+
+
+/* ============================================================
+   MESSAGES
+============================================================ */
+
+.messages {
+
+    flex: 1;
+
+    overflow-y: auto;
+
+    padding: 30px;
+
+}
+
+
+.messages::-webkit-scrollbar {
+
+    width: 5px;
+
+}
+
+
+.messages::-webkit-scrollbar-thumb {
+
+    background: #292940;
+
+    border-radius: 10px;
+
+}
+
+
+/* ============================================================
+   WELCOME
+============================================================ */
+
+.welcome {
+
+    height: 100%;
+
+    display: flex;
+
+    flex-direction: column;
+
+    align-items: center;
+
+    justify-content: center;
+
+    text-align: center;
+
+}
+
+
+.welcome-icon {
+
+    font-size: 4rem;
+
+}
+
+
+.welcome h2 {
+
+    margin-top: 15px;
+
+    font-size: 1.8rem;
+
+    background: linear-gradient(
+        135deg,
+        var(--accent),
+        var(--accent2)
+    );
+
+    -webkit-background-clip: text;
+
+    -webkit-text-fill-color: transparent;
+
+}
+
+
+.welcome p {
+
+    max-width: 430px;
+
+    margin-top: 14px;
+
+    line-height: 1.7;
+
+    color: var(--muted);
+
+}
+
+
+.welcome-steps {
+
+    display: flex;
+
+    gap: 15px;
+
+    margin-top: 28px;
+
+}
+
+
+.step {
+
+    width: 190px;
+
+    padding: 18px;
+
+    border-radius: 12px;
+
+    border: 1px solid var(--border);
+
+    background: var(--panel);
+
+    text-align: left;
+
+}
+
+
+.step-number {
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    width: 23px;
+
+    height: 23px;
+
+    border-radius: 50%;
+
+    background: var(--accent);
+
+    font-size: 0.7rem;
+
+    font-weight: 700;
+
+}
+
+
+.step-text {
+
+    margin-top: 10px;
+
+    font-size: 0.8rem;
+
+    color: var(--text);
+
+}
+
+
+/* ============================================================
+   MESSAGE
+============================================================ */
+
+.msg {
+
+    display: flex;
+
+    gap: 11px;
+
+    margin-bottom: 20px;
+
+}
+
+
+.msg.user {
+
+    flex-direction: row-reverse;
+
+}
+
+
+.avatar {
+
+    width: 35px;
+
+    height: 35px;
+
+    border-radius: 50%;
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    flex-shrink: 0;
+
+}
+
+
+.avatar.ai {
+
+    background: linear-gradient(
+        135deg,
+        var(--accent),
+        #4239bb
+    );
+
+}
+
+
+.avatar.user {
+
+    background: linear-gradient(
+        135deg,
+        var(--accent2),
+        #bf3450
+    );
+
+}
+
+
+.bubble {
+
+    max-width: 75%;
+
+    padding: 15px 18px;
+
+    border-radius: 15px;
+
+    line-height: 1.65;
+
+    font-size: 0.9rem;
+
+}
+
+
+.bubble.ai {
+
+    background: var(--panel);
+
+    border: 1px solid var(--border);
+
+    border-top-left-radius: 4px;
+
+}
+
+
+.bubble.user {
+
+    background: #21153f;
+
+    border: 1px solid #3c2a6d;
+
+    border-top-right-radius: 4px;
+
+}
+
+
+/* ============================================================
+   SOURCES
+============================================================ */
+
+.sources {
+
+    display: flex;
+
+    flex-wrap: wrap;
+
+    gap: 7px;
+
+    margin-top: 13px;
+
+}
+
+
+.source-chip {
+
+    border: 1px solid rgba(61,255,160,.3);
+
+    background: rgba(61,255,160,.07);
+
+    color: var(--green);
+
+    border-radius: 7px;
+
+    padding: 6px 10px;
+
+    font-family: var(--mono);
+
+    font-size: 0.68rem;
+
+    cursor: pointer;
+
+    transition: .2s;
+
+}
+
+
+.source-chip:hover {
+
+    background: rgba(61,255,160,.18);
+
+    transform: translateY(-1px);
+
+}
+
+
+/* ============================================================
+   INPUT
+============================================================ */
+
+.input-bar {
+
+    padding: 15px 30px 20px;
+
+    background: var(--surface);
+
+    border-top: 1px solid var(--border);
+
+}
+
+
+.input-row {
+
+    display: flex;
+
+    gap: 10px;
+
+    align-items: center;
+
+    background: var(--panel);
+
+    border: 1px solid var(--border);
+
+    border-radius: 15px;
+
+    padding: 9px 10px 9px 15px;
+
+}
+
+
+.input-row:focus-within {
+
+    border-color: var(--accent);
+
+}
+
+
+#chat-input {
+
+    flex: 1;
+
+    resize: none;
+
+    background: transparent;
+
+    border: none;
+
+    outline: none;
+
+    color: var(--text);
+
+    font-family: var(--font);
+
+    min-height: 25px;
+
+    max-height: 110px;
+
+}
+
+
+#chat-input::placeholder {
+
+    color: #777795;
+
+}
+
+
+.send-btn {
+
+    width: 42px;
+
+    height: 42px;
+
+    border: none;
+
+    border-radius: 9px;
+
+    background: linear-gradient(
+        135deg,
+        var(--accent),
+        #5148d4
+    );
+
+    color: white;
+
+    font-size: 1rem;
+
+    cursor: pointer;
+
+}
+
+
+.send-btn:disabled {
+
+    opacity: .4;
+
+    cursor: not-allowed;
+
+}
+
+
+.input-hint {
+
+    text-align: center;
+
+    color: #686884;
+
+    font-size: .7rem;
+
+    margin-top: 7px;
+
+}
+
+
+/* ============================================================
+   TYPING
+============================================================ */
+
+.typing {
+
+    display: flex;
+
+    gap: 5px;
+
+}
+
+
+.typing span {
+
+    width: 7px;
+
+    height: 7px;
+
+    border-radius: 50%;
+
+    background: var(--accent);
+
+    animation: bounce 1.2s infinite;
+
+}
+
+
+.typing span:nth-child(2) {
+
+    animation-delay: .2s;
+
+}
+
+
+.typing span:nth-child(3) {
+
+    animation-delay: .4s;
+
+}
+
+
+@keyframes bounce {
+
+    0%, 60%, 100% {
+
+        transform: translateY(0);
+
+    }
+
+    30% {
+
+        transform: translateY(-6px);
+
+    }
+
+}
+
+
+/* ============================================================
+   TOAST
+============================================================ */
+
+.toast {
+
+    position: fixed;
+
+    right: 25px;
+
+    bottom: 25px;
+
+    padding: 13px 18px;
+
+    border-radius: 10px;
+
+    background: var(--panel);
+
+    border: 1px solid var(--border);
+
+    transform: translateY(100px);
+
+    opacity: 0;
+
+    transition: .3s;
+
+    z-index: 9999;
+
+    max-width: 350px;
+
+}
+
+
+.toast.show {
+
+    transform: translateY(0);
+
+    opacity: 1;
+
+}
+
+
+.toast.success {
+
+    border-color: rgba(61,255,160,.4);
+
+    color: var(--green);
+
+}
+
+
+.toast.error {
+
+    border-color: rgba(255,101,132,.4);
+
+    color: var(--accent2);
+
+}
+
+
+/* ============================================================
+   SOURCE MODAL
+============================================================ */
+
+.modal {
+
+    display: none;
+
+    position: fixed;
+
+    inset: 0;
+
+    background: rgba(0,0,0,.72);
+
+    backdrop-filter: blur(8px);
+
+    z-index: 10000;
+
+    align-items: center;
+
+    justify-content: center;
+
+    padding: 20px;
+
+}
+
+
+.modal.show {
+
+    display: flex;
+
+}
+
+
+.modal-box {
+
+    width: min(800px, 95vw);
+
+    max-height: 80vh;
+
+    overflow-y: auto;
+
+    background: #11111f;
+
+    border: 1px solid var(--border);
+
+    border-radius: 16px;
+
+    box-shadow: 0 20px 80px rgba(0,0,0,.6);
+
+}
+
+
+.modal-header {
+
+    display: flex;
+
+    justify-content: space-between;
+
+    align-items: center;
+
+    padding: 18px 20px;
+
+    border-bottom: 1px solid var(--border);
+
+}
+
+
+.modal-title {
+
+    color: var(--green);
+
+    font-family: var(--mono);
+
+    font-size: .8rem;
+
+}
+
+
+.modal-close {
+
+    width: 32px;
+
+    height: 32px;
+
+    border-radius: 7px;
+
+    border: 1px solid var(--border);
+
+    background: transparent;
+
+    color: var(--text);
+
+    cursor: pointer;
+
+    font-size: 1rem;
+
+}
+
+
+.modal-body {
+
+    padding: 20px;
+
+}
+
+
+.source-page {
+
+    color: var(--accent);
+
+    font-family: var(--mono);
+
+    font-size: .75rem;
+
+    margin-bottom: 15px;
+
+}
+
+
+.source-content {
+
+    white-space: pre-wrap;
+
+    line-height: 1.7;
+
+    color: #d6d6e5;
+
+    font-size: .85rem;
+
+}
+
+
+/* ============================================================
+   MOBILE
+============================================================ */
+
+@media(max-width: 800px) {
+
+    .app {
+
+        grid-template-columns: 1fr;
+
+    }
+
+    .sidebar {
+
+        display: none;
+
+    }
+
+    .bubble {
+
+        max-width: 90%;
+
+    }
+
+    .welcome-steps {
+
+        flex-direction: column;
+
+    }
+
+}
+
+</style>
+
+</head>
+
+
+<body>
+
+
+<div class="app">
+
+
+<!-- ==========================================================
+     NAVBAR
+=========================================================== -->
+
+<nav class="navbar">
+
+    <div class="logo">
+
+        <span class="logo-icon">🧠</span>
+
+        DocuMind AI
+
+    </div>
+
+
+    <div class="nav-badge">
+
+        RAG CHATBOT
+
+    </div>
+
+
+    <div class="nav-status">
+
+        <span
+            class="status-dot"
+            id="status-dot"
+        ></span>
+
+        <span id="status-text">
+
+            Connecting...
+
+        </span>
+
+    </div>
+
+</nav>
+
+
+<!-- ==========================================================
+     SIDEBAR
+=========================================================== -->
+
+<aside class="sidebar">
+
+
+    <div class="sidebar-section">
+
+        <div class="sidebar-label">
+
+            📁 Upload Document
+
+        </div>
+
+
+        <div
+            class="upload-zone"
+            id="upload-zone"
+        >
+
+            <div class="upload-icon">
+
+                📄
+
+            </div>
+
+
+            <div class="upload-text">
+
+                Click or drag & drop
+
+            </div>
+
+
+            <div class="upload-types">
+
+                PDF · TXT · DOCX · MD
+
+            </div>
+
+        </div>
+
+
+        <input
+            type="file"
+            id="file-input"
+            accept=".pdf,.txt,.docx,.md"
+        >
+
+
+        <div
+            class="progress-wrap"
+            id="progress-wrap"
+        >
+
+            <div class="progress-bar">
+
+                <div
+                    class="progress-fill"
+                    id="progress-fill"
+                ></div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- DOCUMENT INFORMATION -->
+
+    <div class="sidebar-section">
+
+        <div
+            class="doc-card"
+            id="doc-card"
+        >
+
+            <div class="doc-success">
+
+                ✓ DOCUMENT UPLOADED SUCCESSFULLY
+
+            </div>
+
+
+            <div
+                class="doc-name"
+                id="doc-name"
+            >
+
+                --
+
+            </div>
+
+
+            <div
+                class="doc-uploaded"
+                id="doc-uploaded"
+            >
+
+                --
+
+            </div>
+
+
+            <div class="doc-info-grid">
+
+
+                <div class="doc-info">
+
+                    <div class="doc-info-label">
+
+                        Pages
+
+                    </div>
+
+                    <div
+                        class="doc-info-value"
+                        id="doc-pages"
+                    >
+
+                        --
+
+                    </div>
+
+                </div>
+
+
+                <div class="doc-info">
+
+                    <div class="doc-info-label">
+
+                        Chunks
+
+                    </div>
+
+                    <div
+                        class="doc-info-value"
+                        id="doc-chunks"
+                    >
+
+                        --
+
+                    </div>
+
+                </div>
+
+
+                <div class="doc-info">
+
+                    <div class="doc-info-label">
+
+                        Characters
+
+                    </div>
+
+                    <div
+                        class="doc-info-value"
+                        id="doc-characters"
+                    >
+
+                        --
+
+                    </div>
+
+                </div>
+
+
+                <div class="doc-info">
+
+                    <div class="doc-info-label">
+
+                        File Size
+
+                    </div>
+
+                    <div
+                        class="doc-info-value"
+                        id="doc-size"
+                    >
+
+                        --
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <button
+        class="clear-button"
+        onclick="clearChat()"
+    >
+
+        🗑 Clear Chat
+
+    </button>
+
+
+</aside>
+
+
+<!-- ==========================================================
+     MAIN CHAT
+=========================================================== -->
+
+<main class="chat-area">
+
+
+    <div
+        class="messages"
+        id="messages"
+    >
+
+
+        <div
+            class="welcome"
+            id="welcome"
+        >
+
+            <div class="welcome-icon">
+
+                🧠
+
+            </div>
+
+
+            <h2>
+
+                DocuMind AI
+
+            </h2>
+
+
+            <p>
+
+                Upload any document and ask questions about it.
+                Powered by RAG — answers are generated from
+                your uploaded document.
+
+            </p>
+
+
+            <div class="welcome-steps">
+
+
+                <div class="step">
+
+                    <div class="step-number">
+
+                        1
+
+                    </div>
+
+                    <div class="step-text">
+
+                        Upload a document
+
+                    </div>
+
+                </div>
+
+
+                <div class="step">
+
+                    <div class="step-number">
+
+                        2
+
+                    </div>
+
+                    <div class="step-text">
+
+                        Document gets indexed
+
+                    </div>
+
+                </div>
+
+
+                <div class="step">
+
+                    <div class="step-number">
+
+                        3
+
+                    </div>
+
+                    <div class="step-text">
+
+                        Ask questions
+
+                    </div>
+
+                </div>
+
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- INPUT -->
+
+    <div class="input-bar">
+
+        <div class="input-row">
+
+            <textarea
+                id="chat-input"
+                rows="1"
+                placeholder="Ask anything about your document..."
+            ></textarea>
+
+
+            <button
+                class="send-btn"
+                id="send-btn"
+                onclick="sendMessage()"
+            >
+
+                ➤
+
+            </button>
+
+        </div>
+
+
+        <div class="input-hint">
+
+            Answers come only from your uploaded document
+
+        </div>
+
+    </div>
+
+
+</main>
+
+
+</div>
+
+
+<!-- ==========================================================
+     SOURCE MODAL
+=========================================================== -->
+
+<div
+    class="modal"
+    id="source-modal"
+>
+
+    <div class="modal-box">
+
+
+        <div class="modal-header">
+
+            <div
+                class="modal-title"
+                id="modal-title"
+            >
+
+                📎 SOURCE
+
+            </div>
+
+
+            <button
+                class="modal-close"
+                onclick="closeSource()"
+            >
+
+                ✕
+
+            </button>
+
+        </div>
+
+
+        <div class="modal-body">
+
+            <div
+                class="source-page"
+                id="source-page"
+            >
+
+            </div>
+
+
+            <div
+                class="source-content"
+                id="source-content"
+            >
+
+            </div>
+
+        </div>
+
+
+    </div>
+
+</div>
+
+
+<!-- ==========================================================
+     TOAST
+=========================================================== -->
+
+<div
+    class="toast"
+    id="toast"
+></div>
+
+
+<script>
+
+
+// ============================================================
+// CONFIG
+// ============================================================
+
+const API = "";
+
+
+// ============================================================
+// STATE
+// ============================================================
+
+let docLoaded = false;
+
+let isThinking = false;
+
+let toastTimer;
+
+
+// ============================================================
+// PAGE LOAD
+// ============================================================
+
+window.addEventListener(
+    "load",
+    () => {
+
+        checkServer();
+
+    }
+);
+
+
+// ============================================================
+// CHECK SERVER
+// ============================================================
+
+async function checkServer() {
+
+    try {
+
+        const response = await fetch(
+            `${API}/status`
+        );
+
+        const data = await response.json();
+
+        docLoaded = data.documents_loaded;
+
+        if (docLoaded) {
+
+            setStatus(
+                true,
+                "Document loaded"
+            );
+
+            restoreDocumentInfo(
+                data.document
+            );
+
+        } else {
+
+            setStatus(
+                true,
+                "Server ready"
+            );
+
+        }
+
+    } catch (error) {
+
+        setStatus(
+            false,
+            "Server offline"
+        );
+
+        setTimeout(
+            checkServer,
+            3000
+        );
+
+    }
+
+}
+
+
+// ============================================================
+// STATUS
+// ============================================================
+
+function setStatus(
+    online,
+    text
+) {
+
+    const dot =
+        document.getElementById(
+            "status-dot"
+        );
+
+    const statusText =
+        document.getElementById(
+            "status-text"
+        );
+
+
+    dot.className =
+        "status-dot" +
+        (
+            online
+                ? " online"
+                : ""
+        );
+
+
+    statusText.textContent =
+        text;
+
+}
+
+
+// ============================================================
+// UPLOAD ZONE
+// ============================================================
+
+const zone =
+    document.getElementById(
+        "upload-zone"
+    );
+
+
+const fileInput =
+    document.getElementById(
+        "file-input"
+    );
+
+
+zone.addEventListener(
+    "click",
+    () => {
+
+        fileInput.click();
+
+    }
+);
+
+
+fileInput.addEventListener(
+    "change",
+    () => {
+
+        if (fileInput.files.length) {
+
+            handleFile(
+                fileInput.files[0]
+            );
+
+        }
+
+    }
+);
+
+
+zone.addEventListener(
+    "dragover",
+    (event) => {
+
+        event.preventDefault();
+
+        zone.classList.add(
+            "dragover"
+        );
+
+    }
+);
+
+
+zone.addEventListener(
+    "dragleave",
+    () => {
+
+        zone.classList.remove(
+            "dragover"
+        );
+
+    }
+);
+
+
+zone.addEventListener(
+    "drop",
+    (event) => {
+
+        event.preventDefault();
+
+        zone.classList.remove(
+            "dragover"
+        );
+
+
+        const file =
+            event.dataTransfer.files[0];
+
+
+        if (file) {
+
+            handleFile(file);
+
+        }
+
+    }
+);
+
+
+// ============================================================
+// HANDLE FILE
+// ============================================================
+
+async function handleFile(file) {
+
+    if (!file) return;
+
+
+    showProgress(true);
+
+    setProgress(10);
+
+    toast(
+        "⏳ Uploading document..."
+    );
+
+
+    const form =
+        new FormData();
+
+
+    form.append(
+        "file",
+        file
+    );
+
+
+    try {
+
+        setProgress(30);
+
+
+        const response =
+            await fetch(
+                `${API}/upload`,
+                {
+                    method: "POST",
+                    body: form
+                }
+            );
+
+
+        setProgress(75);
+
+
+        const data =
+            await response.json();
+
+
+        setProgress(100);
+
+
+        if (!response.ok || data.error) {
+
+            toast(
+                "❌ " +
+                (
+                    data.error ||
+                    "Upload failed."
+                ),
+                "error"
+            );
+
+            showProgress(false);
+
+            return;
+
+        }
+
+
+        // ----------------------------------------------------
+        // Document loaded
+        // ----------------------------------------------------
+
+        docLoaded = true;
+
+
+        // ----------------------------------------------------
+        // Update document card
+        // ----------------------------------------------------
+
+        showDocumentInfo(data);
+
+
+        setStatus(
+            true,
+            "Document loaded"
+        );
+
+
+        // ----------------------------------------------------
+        // Hide welcome screen
+        // ----------------------------------------------------
+
+        const welcome =
+            document.getElementById(
+                "welcome"
+            );
+
+
+        if (welcome) {
+
+            welcome.style.display =
+                "none";
+
+        }
+
+
+        // ----------------------------------------------------
+        // Success message
+        // ----------------------------------------------------
+
+        addMessage(
+            "ai",
+
+            `✅ <strong>Document uploaded successfully!</strong><br><br>
+             📄 <strong>${escapeHtml(data.filename)}</strong><br>
+             📑 ${data.pages} pages<br>
+             🧩 ${data.chunks} chunks indexed<br>
+             📊 ${formatNumber(data.characters)} characters<br>
+             🕐 Uploaded at ${data.uploaded_at}<br><br>
+             Your document is ready. Ask me anything about it.`
+        );
+
+
+        toast(
+            "✅ Document uploaded successfully!",
+            "success"
+        );
+
+
+        setTimeout(
+            () => {
+
+                showProgress(false);
+
+            },
+            700
+        );
+
+
+    } catch (error) {
+
+        console.error(error);
+
+
+        toast(
+            "❌ Upload failed. Make sure server.py is running.",
+            "error"
+        );
+
+
+        showProgress(false);
+
+    }
+
+}
+
+
+// ============================================================
+// SHOW DOCUMENT INFO
+// ============================================================
+
+function showDocumentInfo(data) {
+
+    document
+        .getElementById("doc-card")
+        .classList.add("visible");
+
+
+    document
+        .getElementById("doc-name")
+        .textContent =
+        data.filename;
+
+
+    document
+        .getElementById("doc-uploaded")
+        .textContent =
+        "🕐 Uploaded: " +
+        data.uploaded_at;
+
+
+    document
+        .getElementById("doc-pages")
+        .textContent =
+        data.pages;
+
+
+    document
+        .getElementById("doc-chunks")
+        .textContent =
+        data.chunks;
+
+
+    document
+        .getElementById("doc-characters")
+        .textContent =
+        formatNumber(
+            data.characters
+        );
+
+
+    document
+        .getElementById("doc-size")
+        .textContent =
+        data.file_size_mb +
+        " MB";
+
+}
+
+
+// ============================================================
+// RESTORE DOCUMENT INFO
+// ============================================================
+
+function restoreDocumentInfo(data) {
+
+    if (
+        !data ||
+        !data.filename
+    ) {
+
+        return;
+
+    }
+
+
+    docLoaded = true;
+
+
+    document
+        .getElementById("doc-card")
+        .classList.add("visible");
+
+
+    document
+        .getElementById("doc-name")
+        .textContent =
+        data.filename;
+
+
+    document
+        .getElementById("doc-uploaded")
+        .textContent =
+        "🕐 Uploaded: " +
+        data.uploaded_at;
+
+
+    document
+        .getElementById("doc-pages")
+        .textContent =
+        data.pages;
+
+
+    document
+        .getElementById("doc-chunks")
+        .textContent =
+        data.chunks;
+
+
+    document
+        .getElementById("doc-characters")
+        .textContent =
+        formatNumber(
+            data.characters
+        );
+
+
+    document
+        .getElementById("doc-size")
+        .textContent =
+        data.file_size_mb
+            ? data.file_size_mb + " MB"
+            : "--";
+
+}
+
+
+// ============================================================
+// SEND MESSAGE
+// ============================================================
+
+async function sendMessage() {
+
+    const input =
+        document.getElementById(
+            "chat-input"
+        );
+
+
+    const question =
+        input.value.trim();
+
+
+    if (
+        !question ||
+        isThinking
+    ) {
+
+        return;
+
+    }
+
+
+    if (!docLoaded) {
+
+        toast(
+            "📄 Upload a document first.",
+            "error"
+        );
+
+        return;
+
+    }
+
+
+    addMessage(
+        "user",
+        escapeHtml(question)
+    );
+
+
+    input.value = "";
+
+    autoResize(input);
+
+
+    isThinking = true;
+
+
+    document
+        .getElementById(
+            "send-btn"
+        )
+        .disabled = true;
+
+
+    const typingId =
+        addTyping();
+
+
+    try {
+
+        const response =
+            await fetch(
+                `${API}/chat`,
+                {
+                    method: "POST",
+
+                    headers: {
+                        "Content-Type":
+                            "application/json"
+                    },
+
+                    body:
+                        JSON.stringify({
+                            question:
+                                question
+                        })
+                }
+            );
+
+
+        const data =
+            await response.json();
+
+
+        removeTyping(
+            typingId
+        );
+
+
+        if (
+            !response.ok ||
+            data.error
+        ) {
+
+            addMessage(
+                "ai",
+                "❌ " +
+                escapeHtml(
+                    data.error ||
+                    "Something went wrong."
+                )
+            );
+
+        } else {
+
+            addMessage(
+                "ai",
+                formatAnswer(
+                    data.answer
+                ),
+                data.sources || []
+            );
+
+        }
+
+
+    } catch (error) {
+
+        removeTyping(
+            typingId
+        );
+
+
+        addMessage(
+            "ai",
+            "❌ Could not reach the server."
+        );
+
+    }
+
+
+    isThinking = false;
+
+
+    document
+        .getElementById(
+            "send-btn"
+        )
+        .disabled = false;
+
+}
+
+
+// ============================================================
+// ADD MESSAGE
+// ============================================================
+
+function addMessage(
+    role,
+    text,
+    sources = []
+) {
+
+    const wrap =
+        document.createElement(
+            "div"
+        );
+
+
+    wrap.className =
+        `msg ${role}`;
+
+
+    const avatar =
+        document.createElement(
+            "div"
+        );
+
+
+    avatar.className =
+        `avatar ${role}`;
+
+
+    avatar.textContent =
+        role === "ai"
+            ? "🧠"
+            : "🙋";
+
+
+    const bubble =
+        document.createElement(
+            "div"
+        );
+
+
+    bubble.className =
+        `bubble ${role}`;
+
+
+    bubble.innerHTML =
+        text;
+
+
+    // --------------------------------------------------------
+    // Sources
+    // --------------------------------------------------------
+
+    if (
+        sources &&
+        sources.length
+    ) {
+
+        const sourceWrap =
+            document.createElement(
+                "div"
+            );
+
+
+        sourceWrap.className =
+            "sources";
+
+
+        sources
+            .slice(0, 3)
+            .forEach(
+                (source) => {
+
+                    const chip =
+                        document.createElement(
+                            "button"
+                        );
+
+
+                    chip.className =
+                        "source-chip";
+
+
+                    chip.textContent =
+                        `📎 Source ${source.id}`;
+
+
+                    chip.onclick =
+                        () => {
+
+                            openSource(
+                                source
+                            );
+
+                        };
+
+
+                    sourceWrap.appendChild(
+                        chip
+                    );
+
+                }
+            );
+
+
+        bubble.appendChild(
+            sourceWrap
+        );
+
+    }
+
+
+    wrap.appendChild(
+        avatar
+    );
+
+
+    wrap.appendChild(
+        bubble
+    );
+
+
+    const messages =
+        document.getElementById(
+            "messages"
+        );
+
+
+    messages.appendChild(
+        wrap
+    );
+
+
+    messages.scrollTop =
+        messages.scrollHeight;
+
+
+    return wrap;
+
+}
+
+
+// ============================================================
+// SOURCE MODAL
+// ============================================================
+
+function openSource(source) {
+
+    document
+        .getElementById(
+            "modal-title"
+        )
+        .textContent =
+        `📎 Source ${source.id}`;
+
+
+    document
+        .getElementById(
+            "source-page"
+        )
+        .textContent =
+        `Page ${source.page}`;
+
+
+    document
+        .getElementById(
+            "source-content"
+        )
+        .textContent =
+        source.content;
+
+
+    document
+        .getElementById(
+            "source-modal"
+        )
+        .classList.add(
+            "show"
+        );
+
+}
+
+
+function closeSource() {
+
+    document
+        .getElementById(
+            "source-modal"
+        )
+        .classList.remove(
+            "show"
+        );
+
+}
+
+
+document
+    .getElementById(
+        "source-modal"
+    )
+    .addEventListener(
+        "click",
+        function(event) {
+
+            if (
+                event.target === this
+            ) {
+
+                closeSource();
+
+            }
+
+        }
+    );
+
+
+document.addEventListener(
+    "keydown",
+    function(event) {
+
+        if (
+            event.key === "Escape"
+        ) {
+
+            closeSource();
+
+        }
+
+    }
+);
+
+
+// ============================================================
+// TYPING
+// ============================================================
+
+function addTyping() {
+
+    const id =
+        "typing-" +
+        Date.now();
+
+
+    const wrap =
+        document.createElement(
+            "div"
+        );
+
+
+    wrap.className =
+        "msg ai";
+
+
+    wrap.id = id;
+
+
+    wrap.innerHTML = `
+
+        <div class="avatar ai">
+            🧠
+        </div>
+
+        <div class="bubble ai">
+
+            <div class="typing">
+
+                <span></span>
+                <span></span>
+                <span></span>
+
+            </div>
+
+        </div>
+    `;
+
+
+    document
+        .getElementById(
+            "messages"
+        )
+        .appendChild(
+            wrap
+        );
+
+
+    const messages =
+        document.getElementById(
+            "messages"
+        );
+
+
+    messages.scrollTop =
+        messages.scrollHeight;
+
+
+    return id;
+
+}
+
+
+function removeTyping(id) {
+
+    const element =
+        document.getElementById(
+            id
+        );
+
+
+    if (element) {
+
+        element.remove();
+
+    }
+
+}
+
+
+// ============================================================
+// FORMAT ANSWER
+// ============================================================
+
+function formatAnswer(text) {
+
+    let safe =
+        escapeHtml(text);
+
+
+    safe =
+        safe.replace(
+            /\*\*(.*?)\*\*/g,
+            "<strong>$1</strong>"
+        );
+
+
+    safe =
+        safe.replace(
+            /\n/g,
+            "<br>"
+        );
+
+
+    return safe;
+
+}
+
+
+// ============================================================
+// ESCAPE HTML
+// ============================================================
+
+function escapeHtml(text) {
+
+    const div =
+        document.createElement(
+            "div"
+        );
+
+
+    div.textContent =
+        text;
+
+
+    return div.innerHTML;
+
+}
+
+
+// ============================================================
+// AUTO RESIZE
+// ============================================================
+
+function autoResize(element) {
+
+    element.style.height =
+        "auto";
+
+
+    element.style.height =
+        Math.min(
+            element.scrollHeight,
+            110
+        ) +
+        "px";
+
+}
+
+
+// ============================================================
+// ENTER TO SEND
+// ============================================================
+
+document
+    .getElementById(
+        "chat-input"
+    )
+    .addEventListener(
+        "keydown",
+        function(event) {
+
+            if (
+                event.key === "Enter" &&
+                !event.shiftKey
+            ) {
+
+                event.preventDefault();
+
+                sendMessage();
+
+            }
+
+        }
+    );
+
+
+document
+    .getElementById(
+        "chat-input"
+    )
+    .addEventListener(
+        "input",
+        function() {
+
+            autoResize(this);
+
+        }
+    );
+
+
+// ============================================================
+// CLEAR CHAT
+// ============================================================
+
+function clearChat() {
+
+    const messages =
+        document.getElementById(
+            "messages"
+        );
+
+
+    messages.innerHTML = `
+
+        <div
+            class="welcome"
+            id="welcome"
+        >
+
+            <div class="welcome-icon">
+                🧠
+            </div>
+
+            <h2>
+                DocuMind AI
+            </h2>
+
+            <p>
+                Chat cleared.
+                Your uploaded document is still loaded.
+                Ask another question.
+            </p>
+
+        </div>
+
+    `;
+
+
+    if (docLoaded) {
+
+        document
+            .getElementById(
+                "welcome"
+            )
+            .style.display =
+            "none";
+
+
+        addMessage(
+            "ai",
+            "🧠 Chat cleared. Your document is still loaded. Ask me anything."
+        );
+
+    }
+
+}
+
+
+// ============================================================
+// PROGRESS
+// ============================================================
+
+function showProgress(show) {
+
+    document
+        .getElementById(
+            "progress-wrap"
+        )
+        .classList.toggle(
+            "visible",
+            show
+        );
+
+
+    if (!show) {
+
+        setProgress(0);
+
+    }
+
+}
+
+
+function setProgress(percent) {
+
+    document
+        .getElementById(
+            "progress-fill"
+        )
+        .style.width =
+        percent + "%";
+
+}
+
+
+// ============================================================
+// TOAST
+// ============================================================
+
+function toast(
+    message,
+    type = ""
+) {
+
+    const element =
+        document.getElementById(
+            "toast"
+        );
+
+
+    element.textContent =
+        message;
+
+
+    element.className =
+        `toast show ${type}`;
+
+
+    clearTimeout(
+        toastTimer
+    );
+
+
+    toastTimer =
+        setTimeout(
+            () => {
+
+                element.classList.remove(
+                    "show"
+                );
+
+            },
+            3500
+        );
+
+}
+
+
+// ============================================================
+// NUMBER FORMAT
+// ============================================================
+
+function formatNumber(number) {
+
+    return Number(
+        number || 0
+    ).toLocaleString();
+
+}
+
+</script>
+
+</body>
+
+</html>

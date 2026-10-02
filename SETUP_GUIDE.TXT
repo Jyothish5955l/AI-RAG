@@ -1,0 +1,97 @@
+# ============================================================
+#  SETUP GUIDE — Read this first!
+#  DocuMind AI — Hackathon RAG Chatbot
+# ============================================================
+
+
+## YOUR PROJECT FOLDER STRUCTURE
+-----------------------------------
+my-project/
+├── server.py       ← Flask backend (RAG + AI)
+├── index.html      ← Your web app with chatbot
+└── requirements.txt
+
+
+## STEP 1 — Install packages (run once in VSCode terminal)
+-----------------------------------------------------------
+pip install flask flask-cors langchain langchain-groq langchain-chroma langchain-community langchain-text-splitters chromadb PyPDF2 python-docx
+
+
+## STEP 2 — Install Ollama (one time)
+-----------------------------------------------------------
+1. Go to https://ollama.com
+2. Download and install for your OS
+3. Open a NEW terminal and run:
+      ollama pull nomic-embed-text
+   (this downloads the embedding model, ~274MB, one time only)
+
+
+## STEP 3 — Get your FREE Groq API key
+-----------------------------------------------------------
+1. Go to https://console.groq.com/keys
+2. Sign up (free)
+3. Click "Create API Key"
+4. Copy the key (starts with gsk_...)
+5. Open server.py and paste it here:
+      GROQ_API_KEY = "paste_your_key_here"
+
+
+## STEP 4 — Run the backend
+-----------------------------------------------------------
+In VSCode terminal:
+   python server.py
+
+You should see:
+   ✅ AI models ready!
+   🌐 Server running at http://localhost:5000
+
+Leave this terminal running!
+
+
+## STEP 5 — Open your web app
+-----------------------------------------------------------
+Open index.html in your browser.
+(Right-click → Open with Live Server  OR  just double-click it)
+
+You'll see the DocuMind AI chatbot interface.
+
+
+## STEP 6 — Use it!
+-----------------------------------------------------------
+1. Enter your Groq API key in the sidebar → Save Key
+2. Upload a PDF or TXT file
+3. Wait for "Document loaded!" message
+4. Start asking questions!
+
+
+## COMMON ERRORS & FIXES
+-----------------------------------------------------------
+
+ERROR: "Server offline — run server.py"
+FIX:   Make sure you ran `python server.py` in terminal
+
+ERROR: "No module named flask"
+FIX:   Run: pip install flask flask-cors
+
+ERROR: "Connection refused" on Ollama
+FIX:   Ollama must be running. Open terminal and run:
+       ollama serve
+
+ERROR: "Invalid API key"
+FIX:   Check your key at console.groq.com/keys
+       Make sure it starts with gsk_
+
+
+## HOW THE CHATBOT WORKS (explain to judges!)
+-----------------------------------------------------------
+1. User uploads a PDF
+2. Python reads and splits it into small chunks
+3. Ollama converts chunks into numbers (embeddings)
+4. Numbers are stored in ChromaDB (local vector database)
+5. User asks a question
+6. System finds the most relevant chunks (similarity search)
+7. Groq AI reads those chunks and writes a smart answer
+8. Answer appears in the chat!
+
+This is called RAG — Retrieval Augmented Generation.
+It answers from YOUR document, not random internet data.
